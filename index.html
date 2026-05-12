@@ -1,0 +1,939 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Sealed in Time</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Pirata+One&family=IM+Fell+English:ital@0;1&family=Lora:ital,wght@0,400;0,600;1,400&display=swap">
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="https://cdn.jsdelivr.net/npm/@emailjs/browser@4/dist/email.min.js"></script>
+<script src="https://accounts.google.com/gsi/client" async defer></script>
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
+:root{
+  --g:#B38630;--gb:#D39D3A;--gl:#F0CA6A;--glp:#FFEFA3;
+  --p:#F0DFBA;--bg:#100904;--bg2:#1C1409;--bg3:#261C0D;
+  --br:#5B3A1D;--brl:#795133;--or:#B65E18;--cr:#E1CFA8;--ink:#1A1008;
+  --muted:rgba(225,207,168,.58);--border:rgba(179,134,48,.28);--bh:rgba(179,134,48,.6);
+}
+body{background:var(--bg);}
+#tc{font-family:'Lora',Georgia,serif;background:var(--bg);color:var(--p);min-height:100vh;font-size:18px;}
+.sc{display:none;}.sc.on{display:block;}
+.rpetop{height:3px;background:repeating-linear-gradient(90deg,#483010 0,#483010 7px,#785820 7px,#785820 11px);opacity:.38;}
+nav{display:flex;align-items:center;justify-content:space-between;padding:12px 22px;border-bottom:1px solid rgba(149,112,40,.16);background:rgba(8,5,1,.95);backdrop-filter:blur(4px);position:sticky;top:0;z-index:100;}
+.logo{cursor:pointer;font-family:'Pirata One',cursive;font-size:22px;color:var(--gl);letter-spacing:.4px;}
+.logo:hover{color:var(--glp);}
+.ndot{width:6px;height:6px;background:var(--or);border-radius:50%;display:inline-block;margin-left:3px;animation:pulse 2.4s ease-in-out infinite;}
+@keyframes pulse{0%,100%{opacity:.35;transform:scale(1);}50%{opacity:.8;transform:scale(1.3);}}
+.bg{background:transparent;border:1.5px solid rgba(149,112,40,.3);color:var(--gl);border-radius:7px;padding:7px 15px;font-family:'IM Fell English',serif;font-style:italic;font-size:13px;cursor:pointer;transition:all .2s;}
+.bg:hover{border-color:var(--g);background:rgba(149,112,40,.07);}
+.bp{background:linear-gradient(135deg,#785010,#503808);color:var(--glp);border:1.5px solid rgba(149,112,40,.45);border-radius:8px;padding:10px 22px;font-family:'Pirata One',cursive;font-size:15px;cursor:pointer;transition:all .25s;letter-spacing:.5px;}
+.bp:hover{transform:translateY(-2px);box-shadow:0 5px 20px rgba(149,112,40,.22);background:linear-gradient(135deg,#907020,#785010);}
+.bp:active{transform:translateY(0);}
+.bp:disabled{opacity:.5;cursor:not-allowed;transform:none;}
+.bs{background:rgba(149,112,40,.05);color:var(--gl);border:1.5px solid rgba(149,112,40,.24);border-radius:8px;padding:10px 22px;font-family:'IM Fell English',serif;font-style:italic;font-size:14px;cursor:pointer;transition:all .25s;}
+.bs:hover{border-color:var(--g);background:rgba(149,112,40,.1);transform:translateY(-1px);}
+@keyframes flt{0%,100%{transform:translateY(0);}50%{transform:translateY(-10px);}}
+@keyframes glw{0%,100%{opacity:.28;transform:translateX(-50%) scaleX(1);}50%{opacity:.65;transform:translateX(-50%) scaleX(1.18);}}
+@keyframes fin{from{opacity:0;transform:translateY(14px);}to{opacity:1;transform:translateY(0);}}
+@keyframes mrev{from{opacity:0;transform:translateY(10px);}to{opacity:1;transform:none;}}
+@keyframes tin{from{opacity:0;transform:translateX(-50%) translateY(-7px);}to{opacity:1;transform:translateX(-50%) translateY(0);}}
+@keyframes tout{80%{opacity:1;}100%{opacity:0;}}
+
+/* AUTH */
+#sa{position:relative;min-height:calc(100vh - 52px);overflow:hidden;background:radial-gradient(circle at 50% 12%,rgba(179,134,48,.18),transparent 34%),linear-gradient(180deg,var(--bg2),var(--bg));}
+.auth-wrap{position:relative;z-index:1;display:grid;grid-template-columns:minmax(260px,1fr) minmax(300px,380px);gap:34px;align-items:center;max-width:960px;margin:0 auto;padding:64px 24px 70px;}
+.auth-copy{max-width:500px;}
+.auth-kicker{font-family:'IM Fell English',serif;font-style:italic;color:var(--gl);font-size:18px;margin-bottom:10px;}
+.auth-title{font-family:'Pirata One',cursive;font-size:58px;line-height:1.02;color:var(--glp);letter-spacing:1px;margin-bottom:14px;}
+.auth-text{font-family:'IM Fell English',serif;font-style:italic;color:var(--cr);font-size:21px;line-height:1.6;opacity:.78;}
+.auth-card{background:linear-gradient(155deg,rgba(28,20,9,.96),rgba(38,28,13,.96));border:1px solid var(--border);border-radius:10px;padding:24px;box-shadow:0 18px 42px rgba(0,0,0,.28);}
+.auth-card h2{font-family:'Pirata One',cursive;color:var(--gl);font-size:32px;font-weight:400;margin-bottom:5px;}
+.auth-note{font-family:'IM Fell English',serif;font-style:italic;color:var(--muted);font-size:15px;line-height:1.45;margin-bottom:18px;}
+.auth-field{margin-bottom:12px;}
+.auth-field label{display:block;font-family:'IM Fell English',serif;color:var(--gl);font-size:15px;margin-bottom:6px;}
+.auth-input{width:100%;background:rgba(5,3,1,.54);border:1px solid rgba(179,134,48,.28);border-radius:7px;padding:12px 13px;color:var(--p);font-family:'Lora',Georgia,serif;font-size:16px;}
+.auth-input:focus{outline:none;border-color:var(--gl);box-shadow:0 0 12px rgba(179,134,48,.12);}
+.auth-actions{display:flex;flex-direction:column;gap:10px;margin-top:16px;}
+.google-btn{display:flex;align-items:center;justify-content:center;gap:10px;background:#fff;color:#1f1f1f;border:0;border-radius:8px;padding:11px 14px;font-family:Arial,sans-serif;font-size:15px;font-weight:600;cursor:pointer;transition:transform .2s,box-shadow .2s;}
+.google-btn:hover{transform:translateY(-1px);box-shadow:0 5px 20px rgba(255,255,255,.1);}
+.google-mark{width:18px;height:18px;display:inline-grid;place-items:center;border-radius:50%;font-weight:700;color:#4285f4;}
+.auth-divider{display:flex;align-items:center;gap:10px;color:var(--muted);font-family:'IM Fell English',serif;font-style:italic;font-size:13px;margin:14px 0;}
+.auth-divider::before,.auth-divider::after{content:'';height:1px;background:rgba(179,134,48,.18);flex:1;}
+.auth-mini{font-family:'IM Fell English',serif;font-style:italic;color:rgba(225,207,168,.48);font-size:13px;margin-top:13px;line-height:1.4;}
+.emailjs-guide{border-top:1px solid rgba(179,134,48,.14);margin-top:18px;padding-top:15px;font-family:'IM Fell English',serif;color:var(--cr);font-size:14px;line-height:1.55;opacity:.78;}
+.emailjs-guide strong{color:var(--gl);}
+@media(max-width:760px){
+  .auth-wrap{grid-template-columns:1fr;padding:38px 18px 56px;}
+  .auth-title{font-size:44px;}
+  .auth-text{font-size:18px;}
+}
+
+/* LANDING */
+#sl{position:relative;overflow:hidden;}
+canvas#ptc{position:absolute;inset:0;pointer-events:none;z-index:0;}
+.lhero{display:flex;flex-direction:column;align-items:center;padding:48px 24px 60px;text-align:center;position:relative;z-index:1;}
+.strs{position:absolute;inset:0;pointer-events:none;background:radial-gradient(1.5px 1.5px at 14% 20%,rgba(200,168,70,.3) 0%,transparent 100%),radial-gradient(1px 1px at 75% 15%,rgba(200,168,70,.22) 0%,transparent 100%),radial-gradient(1.5px 1.5px at 43% 50%,rgba(200,168,70,.26) 0%,transparent 100%),radial-gradient(1px 1px at 84% 68%,rgba(190,158,80,.18) 0%,transparent 100%),radial-gradient(1.5px 1.5px at 27% 76%,rgba(200,168,70,.22) 0%,transparent 100%);}
+.cwrap{position:relative;width:148px;height:120px;margin:0 auto 36px;animation:flt 4s ease-in-out infinite;cursor:pointer;}
+.clid{position:absolute;top:0;width:148px;height:49px;background:linear-gradient(180deg,#604020,#482E16);border:1.5px solid rgba(149,112,40,.58);border-radius:54px 54px 3px 3px;transform-origin:bottom center;transition:transform .8s cubic-bezier(.4,0,.2,1);z-index:2;}
+.clid::before{content:'';position:absolute;inset:8px;border-top:1px solid rgba(149,112,40,.13);}
+.clb1,.clb2{position:absolute;height:100%;width:10px;background:linear-gradient(90deg,#584010,#907018,#584010);top:0;}
+.clb1{left:20px;}.clb2{right:20px;}
+.cbody{position:absolute;bottom:0;width:148px;height:73px;background:linear-gradient(180deg,#482E16,#281808);border:1.5px solid rgba(149,112,40,.58);border-radius:3px 3px 8px 8px;}
+.cbody::after{content:'';position:absolute;inset:8px;border-top:1px solid rgba(149,112,40,.1);border-bottom:1px solid rgba(149,112,40,.1);}
+.cb1,.cb2{position:absolute;height:100%;width:10px;background:linear-gradient(90deg,#584010,#907018,#584010);}
+.cb1{left:20px;}.cb2{right:20px;}
+.clk{position:absolute;bottom:17px;left:50%;transform:translateX(-50%);width:25px;height:19px;background:linear-gradient(135deg,#907020,#604010);border:1.5px solid rgba(184,137,26,.42);border-radius:3px;}
+.clk::before{content:'';position:absolute;top:-8px;left:4px;width:13px;height:9px;border:2px solid var(--g);border-radius:6px 6px 0 0;background:transparent;}
+.cglow{position:absolute;bottom:-18px;left:50%;transform:translateX(-50%);width:170px;height:32px;background:radial-gradient(ellipse,rgba(149,112,40,.2) 0%,transparent 70%);animation:glw 3s ease-in-out infinite;pointer-events:none;}
+.cwrap:hover .clid{transform:rotateX(-42deg) translateY(-8px);}
+.htit{font-family:'Pirata One',cursive;font-size:46px;line-height:1.05;background:linear-gradient(135deg,#C8A858 0%,#785010 52%,#C8A858 100%);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;margin-bottom:12px;letter-spacing:1.5px;}
+.hsub{font-family:'IM Fell English',serif;font-style:italic;font-size:15px;color:var(--cr);opacity:.66;max-width:380px;line-height:1.72;margin-bottom:32px;}
+.hbts{display:flex;gap:11px;justify-content:center;flex-wrap:wrap;margin-bottom:36px;}
+.dvd{display:flex;align-items:center;gap:13px;width:100%;max-width:420px;margin-bottom:28px;}
+.dvl{flex:1;height:1px;background:linear-gradient(90deg,transparent,rgba(149,112,40,.3),transparent);}
+.feats{display:flex;gap:24px;justify-content:center;flex-wrap:wrap;}
+.feat{text-align:center;max-width:115px;}
+.fic{font-size:22px;display:block;margin-bottom:5px;}
+.flb{font-family:'IM Fell English',serif;font-size:11px;color:var(--cr);opacity:.48;line-height:1.45;}
+.wave{position:absolute;bottom:0;left:0;right:0;height:65px;background:linear-gradient(to top,rgba(12,8,4,.92),transparent);pointer-events:none;}
+
+/* DASHBOARD */
+#sd .inner{padding:22px;}
+.dh{display:flex;align-items:center;justify-content:space-between;margin-bottom:22px;flex-wrap:wrap;gap:10px;}
+.dtit{font-family:'Pirata One',cursive;font-size:22px;color:var(--gl);}
+.dtit small{font-family:'IM Fell English',serif;font-size:11px;color:var(--cr);opacity:.42;display:block;font-style:italic;margin-top:2px;}
+.cgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(178px,1fr));gap:12px;}
+.ccard{background:linear-gradient(155deg,var(--bg2),var(--bg3));border:1px solid var(--border);border-radius:10px;padding:15px;cursor:pointer;transition:all .25s;}
+.ccard:hover{border-color:var(--bh);transform:translateY(-3px);box-shadow:0 6px 22px rgba(149,112,40,.09);}
+.mc{width:50px;height:43px;margin:0 auto 11px;position:relative;}
+.mlid{position:absolute;top:0;width:50px;height:18px;background:linear-gradient(180deg,#604020,#482E16);border:1.5px solid rgba(149,112,40,.52);border-radius:24px 24px 2px 2px;transition:transform .5s;z-index:2;}
+.mbdy{position:absolute;bottom:0;width:50px;height:25px;background:linear-gradient(180deg,#482E16,#281208);border:1.5px solid rgba(149,112,40,.52);border-radius:2px 2px 5px 5px;}
+.mlk{position:absolute;bottom:4px;left:50%;transform:translateX(-50%);width:9px;height:7px;background:var(--g);border-radius:1px;}
+.mlk::before{content:'';position:absolute;top:-4px;left:1px;width:6px;height:5px;border:1.5px solid var(--g);border-radius:3px 3px 0 0;background:transparent;}
+.mlid.op{transform:translateY(-10px) rotate(-18deg);}
+.cn{font-family:'Pirata One',cursive;font-size:14px;color:var(--gl);text-align:center;margin-bottom:3px;}
+.cm{font-family:'IM Fell English',serif;font-style:italic;font-size:10px;color:var(--cr);opacity:.4;text-align:center;margin-bottom:9px;}
+.cct{background:rgba(0,0,0,.2);border:1px solid rgba(149,112,40,.12);border-radius:6px;padding:6px;text-align:center;}
+.ccl{font-size:9px;text-transform:uppercase;letter-spacing:1.3px;color:var(--g);opacity:.55;margin-bottom:3px;}
+.ccv{font-family:'Pirata One',cursive;font-size:14px;color:var(--gl);letter-spacing:.8px;}
+.cdots{display:flex;justify-content:center;gap:4px;margin-top:9px;flex-wrap:wrap;}
+.cdot{width:19px;height:19px;border-radius:50%;background:var(--br);border:1.5px solid rgba(149,112,40,.4);display:flex;align-items:center;justify-content:center;font-size:8px;color:var(--gl);font-family:'Pirata One',cursive;}
+.bdg{display:inline-flex;align-items:center;gap:3px;padding:2px 8px;border-radius:20px;font-size:9px;font-family:'IM Fell English',serif;margin-bottom:6px;}
+.blk{background:rgba(149,112,40,.06);border:1px solid rgba(149,112,40,.18);color:var(--gl);}
+.bop{background:rgba(50,120,50,.06);border:1px solid rgba(50,120,50,.2);color:#70B870;}
+.cnew{border:1.5px dashed rgba(149,112,40,.17);border-radius:10px;padding:15px;display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:192px;cursor:pointer;transition:all .25s;text-align:center;}
+.cnew:hover{border-color:rgba(149,112,40,.38);background:rgba(149,112,40,.03);}
+.npl{font-size:26px;color:var(--g);opacity:.38;margin-bottom:7px;}
+.nlb{font-family:'IM Fell English',serif;font-style:italic;font-size:12px;color:var(--cr);opacity:.4;}
+
+/* WIZARD */
+#sc .inner{padding:22px;max-width:530px;margin:0 auto;}
+.bk{background:transparent;border:none;color:var(--g);font-family:'IM Fell English',serif;font-style:italic;font-size:13px;cursor:pointer;opacity:.55;display:flex;align-items:center;gap:5px;padding:0;margin-bottom:18px;}
+.bk:hover{opacity:.9;}
+.wh{text-align:center;margin-bottom:26px;}
+.wseal{display:inline-flex;align-items:center;justify-content:center;width:48px;height:48px;border-radius:50%;background:radial-gradient(circle at 35% 35%,#803020,#601818);border:2px solid rgba(255,255,255,.08);font-size:17px;margin:0 auto 11px;box-shadow:0 4px 14px rgba(96,24,24,.22);}
+.wtit{font-family:'Pirata One',cursive;font-size:24px;color:var(--gl);margin-bottom:4px;}
+.wsub{font-family:'IM Fell English',serif;font-style:italic;font-size:12px;color:var(--cr);opacity:.48;}
+.steps{display:flex;align-items:center;justify-content:center;margin-bottom:26px;}
+.si{display:flex;flex-direction:column;align-items:center;gap:4px;}
+.sc2{width:31px;height:31px;border-radius:50%;border:2px solid rgba(149,112,40,.18);display:flex;align-items:center;justify-content:center;font-family:'Pirata One',cursive;font-size:12px;color:var(--cr);opacity:.32;transition:all .3s;}
+.si.ac .sc2{border-color:var(--g);background:rgba(149,112,40,.09);color:var(--gl);opacity:1;box-shadow:0 0 10px rgba(149,112,40,.15);}
+.si.dn .sc2{border-color:var(--g);background:var(--g);color:var(--ink);opacity:1;}
+.sl2{font-family:'IM Fell English',serif;font-size:9px;color:var(--cr);opacity:.32;white-space:nowrap;}
+.si.ac .sl2,.si.dn .sl2{opacity:.58;}
+.scon{width:42px;height:1px;background:rgba(149,112,40,.12);margin-bottom:16px;flex-shrink:0;transition:background .3s;}
+.scon.dn{background:rgba(149,112,40,.38);}
+.vg{display:grid;grid-template-columns:1fr 1fr;gap:9px;margin-bottom:20px;}
+.vsl{background:linear-gradient(155deg,var(--bg2),var(--bg3));border:1.5px solid rgba(149,112,40,.17);border-radius:10px;padding:15px 12px;cursor:pointer;transition:all .25s;text-align:center;}
+.vsl:hover{border-color:rgba(149,112,40,.38);}
+.vsl.sel{border-color:var(--g);background:rgba(149,112,40,.06);box-shadow:0 0 13px rgba(149,112,40,.09);}
+.vic{font-size:28px;margin-bottom:7px;display:block;}
+.vn{font-family:'Pirata One',cursive;font-size:14px;color:var(--gl);margin-bottom:2px;}
+.vd{font-family:'IM Fell English',serif;font-style:italic;font-size:10px;color:var(--cr);opacity:.4;line-height:1.35;}
+.fg{margin-bottom:15px;}
+.lb{display:block;font-family:'IM Fell English',serif;font-size:12px;color:var(--gl);margin-bottom:6px;}
+.lb span{color:var(--or);}
+.inp,.txa{width:100%;background:rgba(5,3,1,.5);border:1px solid rgba(149,112,40,.2);border-radius:6px;padding:9px 12px;color:var(--p);font-family:'Lora',Georgia,serif;font-size:13px;transition:border-color .2s;}
+.inp:focus,.txa:focus{outline:none;border-color:var(--g);box-shadow:0 0 7px rgba(149,112,40,.07);}
+.inp::placeholder,.txa::placeholder{color:rgba(206,192,160,.13);font-style:italic;}
+.txa{height:96px;resize:vertical;line-height:1.55;}
+input[type="datetime-local"].inp::-webkit-calendar-picker-indicator{filter:invert(.42) sepia(1) hue-rotate(5deg);cursor:pointer;}
+
+/* File upload */
+.upload-area{border:1.5px dashed rgba(149,112,40,.22);border-radius:7px;padding:16px;text-align:center;cursor:pointer;transition:all .2s;position:relative;background:rgba(149,112,40,.018);}
+.upload-area:hover{border-color:rgba(149,112,40,.46);background:rgba(149,112,40,.035);}
+.upload-area input[type="file"]{position:absolute;inset:0;opacity:0;cursor:pointer;width:100%;height:100%;}
+.uico{font-size:20px;margin-bottom:4px;}
+.uhint{font-family:'IM Fell English',serif;font-style:italic;font-size:10px;color:var(--muted);}
+.media-previews{display:grid;grid-template-columns:repeat(auto-fill,minmax(74px,1fr));gap:6px;margin-top:6px;}
+.prev-item{position:relative;border-radius:5px;overflow:hidden;background:var(--bg2);border:1px solid rgba(149,112,40,.13);}
+.prev-item img,.prev-item video{width:100%;height:58px;object-fit:cover;display:block;}
+.prev-rm{position:absolute;top:2px;right:2px;background:rgba(0,0,0,.7);color:#bbb;border:none;border-radius:50%;width:15px;height:15px;font-size:8px;cursor:pointer;display:flex;align-items:center;justify-content:center;}
+.prev-lbl{font-size:8px;padding:2px 4px;font-family:'IM Fell English',serif;color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.mlist{margin-top:6px;display:flex;flex-direction:column;gap:4px;}
+.mi{padding:7px 10px;background:rgba(149,112,40,.045);border:1px solid rgba(149,112,40,.13);border-radius:5px;font-family:'IM Fell English',serif;font-size:11px;color:rgba(206,192,160,.58);display:flex;justify-content:space-between;align-items:center;gap:8px;}
+.mi-label{font-size:11px;color:var(--gl);}
+.mi span.rm{cursor:pointer;opacity:.35;flex-shrink:0;}.mi span.rm:hover{opacity:.75;}
+
+/* Email */
+.chips{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:7px;}
+.chip{background:rgba(149,112,40,.07);border:1px solid rgba(149,112,40,.22);border-radius:20px;padding:3px 10px;font-size:10px;color:var(--gl);font-family:'IM Fell English',serif;display:flex;align-items:center;gap:5px;}
+.xbtn{cursor:pointer;opacity:.42;}.xbtn:hover{opacity:.85;}
+.einp{display:flex;gap:6px;}.einp .inp{flex:1;}
+.sm{background:rgba(0,0,0,.16);border:1px solid rgba(149,112,40,.12);border-radius:8px;padding:12px;margin:13px 0;}
+.smtit{font-family:'Pirata One',cursive;font-size:12px;color:var(--g);margin-bottom:8px;}
+.smr{font-family:'IM Fell English',serif;font-size:11px;color:var(--cr);opacity:.55;line-height:2.1;}
+.smr strong{color:var(--gl);}
+.wnav{display:flex;justify-content:space-between;align-items:center;margin-top:22px;padding-top:15px;border-top:1px solid rgba(149,112,40,.08);}
+.radg{display:flex;flex-direction:column;gap:6px;}
+.radlb{display:flex;align-items:center;gap:7px;cursor:pointer;color:var(--cr);font-family:'IM Fell English',serif;font-size:12px;}
+input[type="radio"]{accent-color:var(--g);}
+.email-status{font-family:'IM Fell English',serif;font-style:italic;font-size:11px;margin-top:5px;display:none;}
+.email-status.show{display:block;}
+.email-status.sending{color:var(--gl);}
+.email-status.sent{color:#70B870;}
+.email-status.fail{color:#C06040;}
+
+/* VIEW */
+#sv .inner{padding:22px;text-align:center;}
+.vhdr{margin-bottom:22px;}
+.vtit{font-family:'Pirata One',cursive;font-size:28px;color:var(--gl);margin-bottom:4px;}
+.vmta{font-family:'IM Fell English',serif;font-style:italic;font-size:12px;color:var(--cr);opacity:.48;}
+.vchest{width:186px;height:154px;margin:0 auto 22px;position:relative;animation:flt 4s ease-in-out infinite;cursor:pointer;}
+.vlid{position:absolute;top:0;width:186px;height:66px;background:linear-gradient(180deg,#604020,#482E16);border:2px solid rgba(149,112,40,.55);border-radius:78px 78px 4px 4px;transform-origin:bottom center;transition:transform 1s cubic-bezier(.4,0,.2,1);z-index:2;}
+.vlid::before{content:'';position:absolute;inset:9px;border-top:1.5px solid rgba(149,112,40,.11);}
+.vbdy{position:absolute;bottom:0;width:186px;height:88px;background:linear-gradient(180deg,#482E16,#281408);border:2px solid rgba(149,112,40,.55);border-radius:3px 3px 10px 10px;}
+.vbdy::after{content:'';position:absolute;inset:10px;border-top:1.5px solid rgba(149,112,40,.1);border-bottom:1.5px solid rgba(149,112,40,.1);}
+.vba{position:absolute;height:100%;width:14px;background:linear-gradient(90deg,#584010,#907018,#584010);}
+.vba:nth-child(1){left:36px;}.vba:nth-child(2){right:36px;}
+.vlk2{position:absolute;bottom:21px;left:50%;transform:translateX(-50%);width:28px;height:22px;background:linear-gradient(135deg,#907020,#604010);border:1.5px solid rgba(174,127,24,.42);border-radius:3px;}
+.vlk2::before{content:'';position:absolute;top:-11px;left:5px;width:17px;height:12px;border:2.5px solid var(--g);border-radius:8px 8px 0 0;background:transparent;}
+.vglow{position:absolute;bottom:-22px;left:50%;transform:translateX(-50%);width:230px;height:46px;background:radial-gradient(ellipse,rgba(149,112,40,.2) 0%,transparent 70%);animation:glw 3s ease-in-out infinite;pointer-events:none;}
+.vchest.op .vlid{transform:rotateX(-58deg) translateY(-12px);}
+.seal-done{max-width:560px;margin:0 auto;text-align:center;}
+.done-title{font-family:'Pirata One',cursive;font-size:38px;color:var(--glp);margin-bottom:6px;}
+.done-copy{font-family:'IM Fell English',serif;font-style:italic;font-size:17px;color:var(--cr);opacity:.72;line-height:1.55;margin:0 auto 20px;max-width:430px;}
+.stored-panel{background:linear-gradient(155deg,var(--bg2),var(--bg3));border:1px solid var(--border);border-radius:10px;padding:16px;margin:18px auto;max-width:430px;text-align:left;}
+.stored-panel h3{font-family:'Pirata One',cursive;font-weight:400;font-size:22px;color:var(--gl);margin-bottom:8px;text-align:center;}
+.stored-row{display:flex;align-items:center;justify-content:space-between;gap:12px;border-top:1px solid rgba(179,134,48,.12);padding:9px 0;font-family:'IM Fell English',serif;color:var(--cr);font-size:14px;}
+.stored-row:first-of-type{border-top:0;}
+.stored-row strong{color:var(--glp);font-weight:400;}
+.done-actions{display:flex;justify-content:center;gap:10px;flex-wrap:wrap;margin-top:18px;}
+.si2{background:linear-gradient(155deg,var(--bg2),var(--bg3));border:1px solid rgba(149,112,40,.18);border-radius:11px;padding:18px;max-width:300px;margin:0 auto 18px;}
+.sil{font-family:'IM Fell English',serif;font-size:10px;color:var(--cr);opacity:.48;text-transform:uppercase;letter-spacing:1.8px;margin-bottom:9px;}
+.scd{display:flex;justify-content:center;gap:10px;}
+.cblk{text-align:center;}
+.cnum{font-family:'Pirata One',cursive;font-size:26px;color:var(--gl);line-height:1;display:block;}
+.cunt{font-size:9px;color:var(--cr);opacity:.38;text-transform:uppercase;letter-spacing:.7px;margin-top:2px;}
+.csep{font-family:'Pirata One',cursive;font-size:22px;color:var(--g);opacity:.26;align-self:flex-start;padding-top:3px;}
+.mems{display:grid;grid-template-columns:repeat(auto-fill,minmax(142px,1fr));gap:9px;max-width:500px;margin:0 auto;text-align:left;}
+.mcard{background:var(--p);border-radius:7px;overflow:hidden;animation:mrev .5s ease both;}
+.mcard-img{width:100%;height:85px;object-fit:cover;display:block;}
+.mcard-vid{width:100%;height:85px;object-fit:cover;display:block;}
+.mcard-body{padding:9px;}
+.mtyp{font-family:'IM Fell English',serif;font-style:italic;font-size:9px;color:var(--br);text-transform:uppercase;letter-spacing:.8px;margin-bottom:4px;}
+.mpre{font-family:'Lora',serif;font-size:11px;color:var(--ink);line-height:1.5;}
+.maut{font-family:'IM Fell English',serif;font-style:italic;font-size:9px;color:var(--brl);margin-top:5px;}
+.mbrs{display:flex;justify-content:center;gap:6px;flex-wrap:wrap;margin-top:13px;}
+.mbr{display:flex;align-items:center;gap:5px;background:rgba(0,0,0,.18);border:1px solid rgba(149,112,40,.12);border-radius:20px;padding:3px 9px 3px 3px;font-family:'IM Fell English',serif;font-size:11px;color:var(--cr);}
+.mav{width:20px;height:20px;border-radius:50%;background:var(--br);border:1.5px solid rgba(149,112,40,.38);display:flex;align-items:center;justify-content:center;font-size:8px;color:var(--gl);font-family:'Pirata One',cursive;}
+
+/* TOAST */
+#tctoast{position:fixed;top:68px;left:50%;transform:translateX(-50%);z-index:9999;pointer-events:none;display:flex;flex-direction:column;align-items:center;gap:4px;}
+.toast{background:rgba(20,12,3,.97);border:1px solid rgba(149,112,40,.4);border-radius:7px;padding:8px 17px;font-family:'IM Fell English',serif;font-style:italic;font-size:12px;color:var(--gl);white-space:nowrap;animation:tin .3s ease,tout .4s ease 2.6s forwards;}
+.toast.err{border-color:rgba(150,45,25,.46);color:#B86040;}
+.ain{animation:fin .4s ease both;}
+.hint{font-family:'IM Fell English',serif;font-style:italic;font-size:10px;color:rgba(190,176,144,.26);margin-top:4px;}
+.bp{font-size:18px!important;padding:12px 25px;}
+.bs,.bg{font-size:16px!important;}
+.htit{font-size:56px;}
+.hsub{font-size:19px;max-width:520px;}
+.flb,.nlb,.wsub,.lb,.radlb,.smr,.vmta{font-size:14px;}
+.dtit{font-size:28px;}
+.dtit small{font-size:14px;}
+.cn,.vn,.ccv{font-size:17px;}
+.cm,.vd,.email-status,.hint{font-size:12px;}
+.wtit{font-size:30px;}
+.vtit{font-size:34px;}
+.inp,.txa{font-size:16px;padding:12px 13px;}
+.toast{font-size:14px;}
+::-webkit-scrollbar{width:5px;}::-webkit-scrollbar-track{background:var(--bg);}::-webkit-scrollbar-thumb{background:rgba(149,112,40,.22);border-radius:3px;}::-webkit-scrollbar-thumb:hover{background:rgba(149,112,40,.4);}
+</style>
+</head>
+<body>
+<div id="tc">
+<div class="rpetop"></div>
+<nav>
+  <div class="logo" onclick="go('l')">⚓ Sealed in Time</div>
+  <button class="bg" onclick="go('d')">My Capsules <span class="ndot"></span></button>
+</nav>
+<div id="tctoast"></div>
+
+<!-- AUTH -->
+<div id="sa" class="sc on">
+  <div class="strs"></div>
+  <div class="auth-wrap ain">
+    <div class="auth-copy">
+      <div class="auth-kicker">Welcome aboard</div>
+      <h1 class="auth-title">Unlock Your Time Capsule</h1>
+      <p class="auth-text">Sign in first, then create sealed memories, invite your crew, and let the future open them at exactly the right moment.</p>
+    </div>
+    <div class="auth-card">
+      <h2>Sign in</h2>
+      <p class="auth-note">Use email for this demo, or connect your own Google Client ID for real Google sign-in.</p>
+      <div id="googleSignIn"></div>
+      <button class="google-btn" id="googleFallback" onclick="googleDemoLogin()"><span class="google-mark">G</span> Continue with Google</button>
+      <div class="auth-divider">or</div>
+      <div class="auth-field">
+        <label for="authEmail">Email</label>
+        <input class="auth-input" id="authEmail" type="email" placeholder="you@example.com">
+      </div>
+      <div class="auth-field">
+        <label for="authPassword">Password</label>
+        <input class="auth-input" id="authPassword" type="password" placeholder="Enter any password">
+      </div>
+      <div class="auth-actions">
+        <button class="bp" onclick="emailLogin()">Enter the Vault</button>
+      </div>
+      <p class="auth-mini">Local demo authentication only. For production, connect this screen to Firebase Auth, Supabase Auth, Auth0, or your own backend.</p>
+      <div class="emailjs-guide"><strong>EmailJS is already loaded.</strong> Add your EmailJS keys near the top of the script, then set <strong>EMAIL_ENABLED</strong> to true.</div>
+    </div>
+  </div>
+</div>
+
+<!-- LANDING -->
+<div id="sl" class="sc">
+  <canvas id="ptc"></canvas>
+  <div class="lhero">
+    <div class="strs"></div>
+    <div class="cwrap" onclick="go('c')">
+      <div class="clid"><div class="clb1"></div><div class="clb2"></div></div>
+      <div class="cbody"><div class="cb1"></div><div class="cb2"></div><div class="clk"></div></div>
+      <div class="cglow"></div>
+    </div>
+    <h1 class="htit">Sealed in Time</h1>
+    <p class="hsub">Lock your memories inside a digital treasure chest.<br>Let them be found only when the stars align.</p>
+    <div class="hbts">
+      <button class="bp" onclick="go('c')">⚓ Create a Capsule</button>
+      <button class="bs" onclick="go('d')">Open My Chest</button>
+    </div>
+    <div class="dvd"><div class="dvl"></div><span style="color:var(--g);font-size:13px;">✦</span><div class="dvl"></div></div>
+    <div class="feats">
+      <div class="feat"><span class="fic">📜</span><div class="flb">Letters, photos &amp; video</div></div>
+      <div class="feat"><span class="fic">🔐</span><div class="flb">Sealed until your chosen date</div></div>
+      <div class="feat"><span class="fic">🧭</span><div class="flb">Invite your crew</div></div>
+      <div class="feat"><span class="fic">💌</span><div class="flb">Email on unlock</div></div>
+    </div>
+    <div class="wave"></div>
+  </div>
+</div>
+
+<!-- DASHBOARD -->
+<div id="sd" class="sc">
+  <div class="inner ain">
+    <div class="dh">
+      <div><div class="dtit">Your Treasure Hold<small id="dashSub"> </small></div></div>
+      <button class="bp" style="font-size:12px;padding:8px 14px;" onclick="go('c')">+ New Capsule</button>
+    </div>
+    <div class="cgrid" id="cgrid"></div>
+  </div>
+</div>
+
+<!-- WIZARD -->
+<div id="sc" class="sc">
+  <div class="inner ain">
+    <button class="bk" onclick="go('d')">← Back to Hold</button>
+    <div class="wh">
+      <div class="wseal">⚓</div>
+      <div class="wtit">Seal a New Capsule</div>
+      <div class="wsub">Choose a vessel, fill it with memories, set it adrift in time</div>
+    </div>
+    <div class="steps">
+      <div class="si ac" id="si1"><div class="sc2">I</div><div class="sl2">Vessel</div></div>
+      <div class="scon" id="cn1"></div>
+      <div class="si" id="si2"><div class="sc2">II</div><div class="sl2">Fill &amp; Seal</div></div>
+      <div class="scon" id="cn2"></div>
+      <div class="si" id="si3"><div class="sc2">III</div><div class="sl2">Invite Crew</div></div>
+    </div>
+
+    <!-- Step 1 -->
+    <div id="ws1">
+      <div class="vg">
+        <div class="vsl sel" onclick="selV('chest',this)"><span class="vic">🪙</span><div class="vn">Treasure Chest</div><div class="vd">A sturdy chest for shared memories</div></div>
+        <div class="vsl" onclick="selV('scroll',this)"><span class="vic">📜</span><div class="vn">Ancient Scroll</div><div class="vd">For letters meant to endure centuries</div></div>
+        <div class="vsl" onclick="selV('bottle',this)"><span class="vic">🍾</span><div class="vn">Message in Bottle</div><div class="vd">Cast adrift for one soul to find</div></div>
+        <div class="vsl" onclick="selV('log',this)"><span class="vic">🚢</span><div class="vn">Pirate's Logbook</div><div class="vd">Chronicle adventures for your crew</div></div>
+      </div>
+      <div class="wnav"><div></div><button class="bp" onclick="wNext()">Set Sail →</button></div>
+    </div>
+
+    <!-- Step 2 -->
+    <div id="ws2" style="display:none;">
+      <div class="fg"><label class="lb">Capsule Name <span>*</span></label><input type="text" class="inp" id="cname" placeholder="e.g. Summer of 2025, Wedding Day…"></div>
+      <div class="fg"><label class="lb">Unlock Date &amp; Time <span>*</span></label><input type="datetime-local" class="inp" id="udate"></div>
+      <div class="fg"><label class="lb">Your Message to the Future</label><textarea class="txa" id="cmsg" placeholder="Write a letter to your future self or loved ones…"></textarea></div>
+      <div class="fg">
+        <label class="lb">📷 Add Photos</label>
+        <div class="upload-area"><input type="file" id="photoInput" accept="image/*" multiple onchange="handleFiles(this,'photo')"><div class="uico">🖼️</div><div class="uhint">Click or drag · JPG, PNG, GIF, WEBP</div></div>
+        <div class="media-previews" id="photoPreviews"></div>
+      </div>
+      <div class="fg">
+        <label class="lb">🎥 Add Videos</label>
+        <div class="upload-area"><input type="file" id="videoInput" accept="video/*" multiple onchange="handleFiles(this,'video')"><div class="uico">🎬</div><div class="uhint">Click or drag · MP4, MOV, WEBM</div></div>
+        <div class="media-previews" id="videoPreviews"></div>
+      </div>
+      <div class="fg">
+        <label class="lb">🎙 Add Voice Notes</label>
+        <div class="upload-area"><input type="file" id="audioInput" accept="audio/*" multiple onchange="handleFiles(this,'voice')"><div class="uico">🎵</div><div class="uhint">Click · MP3, WAV, M4A</div></div>
+        <div class="mlist" id="audioList"></div>
+      </div>
+      <div class="wnav"><button class="bs" onclick="wPrev()">← Back</button><button class="bp" onclick="wNext()">Seal &amp; Invite →</button></div>
+    </div>
+
+    <!-- Step 3 -->
+    <div id="ws3" style="display:none;">
+      <div class="fg">
+        <label class="lb">Invite Your Crew <span style="font-size:10px;color:var(--muted);font-style:italic;">(optional)</span></label>
+        <div class="chips" id="echips"></div>
+        <div class="einp">
+          <input type="email" class="inp" id="einp" placeholder="crewmate@seas.com" onkeydown="if(event.key==='Enter'){event.preventDefault();addE();}">
+          <button class="bp" style="font-size:11px;padding:9px 12px;white-space:nowrap;" onclick="addE()">+ Add</button>
+        </div>
+        <div class="hint">They'll receive an email when the capsule unlocks.</div>
+        <div class="email-status" id="emailStatus"></div>
+      </div>
+      <div class="fg">
+        <label class="lb">Capsule Visibility</label>
+        <div class="radg">
+          <label class="radlb"><input type="radio" name="vis" value="prv" checked> 🔐 Private — only invited crew</label>
+          <label class="radlb"><input type="radio" name="vis" value="pub"> 🌊 Open Waters — anyone with the link</label>
+        </div>
+      </div>
+      <div class="sm">
+        <div class="smtit">⚓ Capsule Summary</div>
+        <div class="smr">
+          <div>Vessel: <strong id="sv2"></strong></div>
+          <div>Name: <strong id="sn2"></strong></div>
+          <div>Unlocks: <strong id="sd2"></strong></div>
+          <div>Crew: <strong id="sc3"></strong></div>
+          <div>Memories: <strong id="sm2"></strong></div>
+        </div>
+      </div>
+      <div class="wnav">
+        <button class="bs" onclick="wPrev()">← Back</button>
+        <button class="bp" id="sealBtn" onclick="doSeal()">🔐 Seal the Capsule</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- VIEW -->
+<div id="sv" class="sc">
+  <div class="inner ain" id="vcon"></div>
+</div>
+</div>
+
+<script>
+// ─── EmailJS Config ───────────────────────────────────────────────────
+// To enable REAL email sending:
+//   1. Sign up free at https://emailjs.com
+//   2. Create an Email Service (Gmail, Outlook, etc.)
+//   3. Create a Template — use these variables in it:
+//      {{to_email}}  {{capsule_name}}  {{unlock_date}}  {{message}}
+//   4. Replace the three strings below with your real IDs
+//   5. Set EMAIL_ENABLED = true
+const EJS_PUBLIC_KEY  = 'YOUR_PUBLIC_KEY';
+const EJS_SERVICE_ID  = 'YOUR_SERVICE_ID';
+const EJS_TEMPLATE_ID = 'YOUR_TEMPLATE_ID';
+const EMAIL_ENABLED   = false;
+try { if (EMAIL_ENABLED) emailjs.init(EJS_PUBLIC_KEY); } catch(e){}
+
+// Supabase Config
+// 1. Create a Supabase project.
+// 2. Run the SQL from supabase_schema.sql in the SQL Editor.
+// 3. Create a Storage bucket named capsule-media.
+// 4. Replace the two strings below with your Project URL and anon/public key.
+const SUPABASE_URL = 'YOUR_SUPABASE_URL';
+const SUPABASE_ANON_KEY = 'YOUR_SUPABASE_ANON_KEY';
+const SUPABASE_MEDIA_BUCKET = 'capsule-media';
+const SUPABASE_ENABLED = SUPABASE_URL.startsWith('https://') && !SUPABASE_ANON_KEY.startsWith('YOUR_');
+const sb = SUPABASE_ENABLED ? supabase.createClient(SUPABASE_URL,SUPABASE_ANON_KEY) : null;
+
+// Google Sign-In Config for the old local-demo Google button.
+// For the full Supabase flow, enable Google in Supabase Auth and the app will use Supabase OAuth.
+const GOOGLE_CLIENT_ID = 'YOUR_GOOGLE_CLIENT_ID';
+// ─────────────────────────────────────────────────────────────────────
+
+const S = {
+  screen:'a', step:1, vessel:'chest', user:null, currentCapsuleId:null,
+  emails:[], media:{photo:[],video:[],voice:[]},
+  capsules:[
+    {id:1,name:"Summer of '25",em:'🪙',vn:'Treasure Chest',udate:new Date(Date.now()+365*24*36e5*2.5),crew:['A','M','J'],locked:true,
+     mems:[{t:'photo',p:'Beach sunset photo',by:'Alex',preview:null},{t:'letter',p:'Dear future me, I hope you still remember the salt air and the laughter…',by:'Morgan',preview:null},{t:'voice',p:'30-second voice note',by:'Jamie',preview:null}]},
+    {id:2,name:"Wedding Day",em:'📜',vn:'Ancient Scroll',udate:new Date(Date.now()+365*24*36e5*5),crew:['S','T'],locked:true,
+     mems:[{t:'letter',p:'My darling, as you read this five years have flown by…',by:'Sarah',preview:null},{t:'photo',p:'Ceremony photo',by:'Tom',preview:null}]},
+    {id:3,name:"Gran's Stories",em:'🍾',vn:'Message in Bottle',udate:new Date(Date.now()-864e5*3),crew:['L','K','R','E'],locked:false,
+     mems:[{t:'voice',p:"Gran singing her favourite song",by:'Gran',preview:null},{t:'letter',p:'My darling grandchildren, by the time you read this I will have sailed past the horizon…',by:'Gran',preview:null},{t:'photo',p:'Family reunion 1987',by:'Lily',preview:null},{t:'video',p:'Christmas morning video',by:'Kurt',preview:null}]}
+  ]
+};
+
+function go(id){
+  if(id!=='a'&&!S.user){toast('Please sign in first','err');id='a';}
+  document.querySelectorAll('.sc').forEach(e=>e.classList.remove('on'));
+  const map={a:'sa',l:'sl',d:'sd',c:'sc',v:'sv'};
+  const el=document.getElementById(map[id]); if(!el) return;
+  el.classList.add('on'); S.screen=id;
+  if(id==='d') rDash();
+  if(id==='c') initWizard();
+  if(id==='l') setTimeout(initP,80);
+  if(id!=='v') S.currentCapsuleId=null;
+  window.scrollTo({top:0,behavior:'smooth'});
+}
+
+async function finishLogin(user){
+  S.user=user||{name:'Guest',email:''};
+  toast(`Welcome, ${S.user.name || 'friend'}!`);
+  await loadCapsules();
+  go('l');
+}
+
+async function emailLogin(){
+  const email=document.getElementById('authEmail')?.value.trim();
+  const pass=document.getElementById('authPassword')?.value.trim();
+  if(!email||!email.includes('@')){toast('Enter a valid email','err');return;}
+  if(!pass){toast('Enter a password','err');return;}
+  if(SUPABASE_ENABLED){
+    let {data,error}=await sb.auth.signInWithPassword({email,password:pass});
+    if(error){
+      const res=await sb.auth.signUp({email,password:pass});
+      data=res.data; error=res.error;
+    }
+    if(error){toast(error.message,'err');return;}
+    if(!data.session){toast('Check your email to confirm your account, then sign in.','err');return;}
+    const u=data.user||data.session?.user;
+    await finishLogin({id:u?.id,name:u?.email?.split('@')[0]||email.split('@')[0],email:u?.email||email});
+    return;
+  }
+  await finishLogin({name:email.split('@')[0],email});
+}
+
+async function googleDemoLogin(){
+  if(SUPABASE_ENABLED){
+    const {error}=await sb.auth.signInWithOAuth({provider:'google',options:{redirectTo:window.location.href.split('#')[0]}});
+    if(error)toast(error.message,'err');
+    return;
+  }
+  if(GOOGLE_CLIENT_ID==='YOUR_GOOGLE_CLIENT_ID'){
+    await finishLogin({name:'Google Guest',email:'google-demo@example.com'});
+    return;
+  }
+  toast('Use the official Google button above','err');
+}
+
+async function handleGoogleCredential(response){
+  const payload=parseJwt(response.credential);
+  await finishLogin({name:payload?.name||'Google User',email:payload?.email||''});
+}
+
+function parseJwt(token){
+  try{
+    const base64=token.split('.')[1].replace(/-/g,'+').replace(/_/g,'/');
+    return JSON.parse(decodeURIComponent(atob(base64).split('').map(c=>'%'+('00'+c.charCodeAt(0).toString(16)).slice(-2)).join('')));
+  }catch(e){return null;}
+}
+
+function initGoogleLogin(){
+  if(SUPABASE_ENABLED)return;
+  if(GOOGLE_CLIENT_ID==='YOUR_GOOGLE_CLIENT_ID')return;
+  if(!window.google||!google.accounts||!google.accounts.id){setTimeout(initGoogleLogin,250);return;}
+  const fallback=document.getElementById('googleFallback');
+  if(fallback)fallback.style.display='none';
+  google.accounts.id.initialize({client_id:GOOGLE_CLIENT_ID,callback:handleGoogleCredential});
+  google.accounts.id.renderButton(document.getElementById('googleSignIn'),{theme:'outline',size:'large',width:330,text:'continue_with'});
+}
+
+async function initSupabaseSession(){
+  if(!SUPABASE_ENABLED)return;
+  sb.auth.onAuthStateChange((_event,session)=>{
+    const user=session?.user;
+    if(user&&!S.user)finishLogin({id:user.id,name:user.email?.split('@')[0]||'User',email:user.email||''});
+  });
+  const {data}=await sb.auth.getSession();
+  const user=data.session?.user;
+  if(user){
+    await finishLogin({id:user.id,name:user.email?.split('@')[0]||'User',email:user.email||''});
+  }
+}
+
+function dbToCapsule(row){
+  return {
+    id:row.id,
+    name:row.name,
+    em:row.em,
+    vn:row.vn,
+    udate:new Date(row.unlock_at),
+    crew:row.crew&&row.crew.length?row.crew:['Y'],
+    locked:new Date(row.unlock_at)>new Date(),
+    mems:row.mems||[]
+  };
+}
+
+async function loadCapsules(){
+  if(!SUPABASE_ENABLED||!S.user?.id)return;
+  const {data,error}=await sb.from('capsules').select('*').order('created_at',{ascending:false});
+  if(error){toast(`Could not load capsules: ${error.message}`,'err');return;}
+  S.capsules=(data||[]).map(dbToCapsule);
+  S.capsules.forEach(isLocked);
+}
+
+function initWizard(){
+  S.step=1;S.emails=[];S.media={photo:[],video:[],voice:[]};
+  rStep(1);
+  ['echips','audioList','photoPreviews','videoPreviews'].forEach(id=>{const el=document.getElementById(id);if(el)el.innerHTML='';});
+  ['cname','cmsg'].forEach(id=>{const el=document.getElementById(id);if(el)el.value='';});
+  ['photoInput','videoInput','audioInput'].forEach(id=>{const el=document.getElementById(id);if(el)el.value='';});
+  const es=document.getElementById('emailStatus');if(es){es.className='email-status';es.textContent='';}
+}
+
+function rDash(){
+  const g=document.getElementById('cgrid');
+  const sub=document.getElementById('dashSub');
+  S.capsules.forEach(isLocked);
+  if(sub){const lk=S.capsules.filter(c=>c.locked).length,op=S.capsules.filter(c=>!c.locked).length;sub.textContent=`${lk} sealed · ${op} unlocked`;}
+  g.innerHTML=S.capsules.map(c=>{
+    const diff=c.udate-Date.now(),d=Math.max(0,Math.floor(diff/864e5)),h=Math.max(0,Math.floor((diff%864e5)/36e5));
+    const dots=c.crew.map(x=>`<div class="cdot">${x}</div>`).join('');
+    const badge=c.locked?`<span class="bdg blk">🔐 Sealed</span>`:`<span class="bdg bop">✦ Unlocked</span>`;
+    const ct=c.locked
+      ?`<div class="cct"><div class="ccl">Unlocks in</div><div class="ccv">${d}d ${h}h</div></div>`
+      :`<div class="cct" style="border-color:rgba(50,120,50,.15);background:rgba(20,60,20,.05);"><div class="ccl" style="color:#70B870;">Memories inside</div><div class="ccv" style="color:#88C888;font-size:13px;">${c.mems.length} items</div></div>`;
+    return`<div class="ccard" onclick="viewC('${esc(c.id)}')">
+      <div style="text-align:center;margin-bottom:4px;">${badge}</div>
+      <div class="mc"><div class="mlid${c.locked?'':' op'}"></div><div class="mbdy"><div class="mlk" style="${c.locked?'':'display:none'}"></div></div></div>
+      <div class="cn">${esc(c.name)}</div><div class="cm">${esc(c.vn)}</div>${ct}
+      <div class="cdots">${dots}</div></div>`;
+  }).join('')+`<div class="cnew" onclick="go('c')"><div class="npl">+</div><div class="nlb">Seal a new capsule</div></div>`;
+}
+
+function isLocked(c){
+  const unlockDate=c.udate instanceof Date?c.udate:new Date(c.udate);
+  c.locked=unlockDate>new Date();
+  return c.locked;
+}
+
+async function viewC(id,silent=false){
+  const c=S.capsules.find(x=>String(x.id)===String(id));if(!c)return;
+  S.currentCapsuleId=id;
+  isLocked(c);
+  if(SUPABASE_ENABLED&&!c.locked)await hydrateMemoryUrls(c);
+  const diff=c.udate-Date.now(),d=Math.max(0,Math.floor(diff/864e5)),h=Math.max(0,Math.floor((diff%864e5)/36e5)),m=Math.max(0,Math.floor((diff%36e5)/6e4)),s=Math.max(0,Math.floor((diff%6e4)/1000));
+  const mbrs=c.crew.map(x=>`<div class="mbr"><div class="mav">${x}</div>${x}</div>`).join('');
+  let body='';
+  if(c.locked){
+    body=`<div class="vchest" onclick="this.classList.toggle('op')">
+      <div class="vlid"></div><div class="vbdy"><div class="vba"></div><div class="vba"></div><div class="vlk2"></div></div><div class="vglow"></div></div>
+      <p style="font-family:'IM Fell English',serif;font-style:italic;font-size:11px;color:rgba(190,176,144,.33);margin-bottom:16px;">Click the chest to peek inside…</p>
+      <div class="si2"><div class="sil">This chest opens in</div>
+        <div class="scd">
+          <div class="cblk"><span class="cnum">${d}</span><div class="cunt">Days</div></div><div class="csep">:</div>
+          <div class="cblk"><span class="cnum">${String(h).padStart(2,'0')}</span><div class="cunt">Hours</div></div><div class="csep">:</div>
+          <div class="cblk"><span class="cnum">${String(m).padStart(2,'0')}</span><div class="cunt">Mins</div></div><div class="csep">:</div>
+          <div class="cblk"><span class="cnum">${String(s).padStart(2,'0')}</span><div class="cunt">Secs</div></div>
+        </div></div>
+      <div style="font-family:'IM Fell English',serif;font-style:italic;font-size:11px;color:rgba(190,176,144,.32);margin-bottom:12px;">${c.mems.length} memories sealed · ${c.crew.length} crew members</div>
+      <div class="mbrs">${mbrs}</div>`;
+  } else {
+    const icons={photo:'📷',voice:'🎙',video:'🎥',letter:'📝'};
+    const mc=c.mems.map((mem,i)=>{
+      let media='';
+      if(mem.preview&&mem.t==='photo') media=`<img class="mcard-img" src="${mem.preview}" alt="photo">`;
+      else if(mem.preview&&mem.t==='video') media=`<video class="mcard-vid" src="${mem.preview}" controls muted playsinline></video>`;
+      return`<div class="mcard" style="animation-delay:${i*.08}s">${media}<div class="mcard-body"><div class="mtyp">${icons[mem.t]||'✦'} ${mem.t}</div><div class="mpre">${esc(mem.p)}</div><div class="maut">— ${esc(mem.by)}</div></div></div>`;
+    }).join('');
+    body=`<div class="vchest op"><div class="vlid"></div><div class="vbdy"><div class="vba"></div><div class="vba"></div></div><div class="vglow" style="background:radial-gradient(ellipse,rgba(50,140,50,.2) 0%,transparent 70%);"></div></div>
+      <div style="font-family:'Pirata One',cursive;font-size:17px;color:#70B870;margin-bottom:4px;">✦ Treasures Revealed ✦</div>
+      <div style="font-family:'IM Fell English',serif;font-style:italic;font-size:11px;color:rgba(190,176,144,.4);margin-bottom:20px;">${c.mems.length} memories await you</div>
+      <div class="mems">${mc}</div><div class="mbrs" style="margin-top:14px;">${mbrs}</div>`;
+  }
+  document.getElementById('vcon').innerHTML=`<button class="bk" onclick="go('d')">← Back to Hold</button>
+    <div class="vhdr"><div class="vtit">${esc(c.name)}</div><div class="vmta">${c.em} ${esc(c.vn)}</div></div>${body}`;
+  if(silent){
+    document.querySelectorAll('.sc').forEach(e=>e.classList.remove('on'));
+    document.getElementById('sv')?.classList.add('on');
+    S.screen='v';
+  } else {
+    go('v');
+  }
+}
+
+async function hydrateMemoryUrls(c){
+  for(const mem of c.mems){
+    if(!mem.storage_path||mem.preview)continue;
+    const {data,error}=await sb.storage.from(SUPABASE_MEDIA_BUCKET).createSignedUrl(mem.storage_path,3600);
+    if(!error&&data?.signedUrl)mem.preview=data.signedUrl;
+  }
+}
+
+function rStep(n){
+  for(let i=1;i<=3;i++){
+    const ws=document.getElementById('ws'+i);if(ws)ws.style.display=i===n?'block':'none';
+    const si=document.getElementById('si'+i);if(si)si.className='si '+(i<n?'dn':i===n?'ac':'');
+    if(i<3){const cn=document.getElementById('cn'+i);if(cn)cn.className='scon '+(i<n?'dn':'');}
+  }
+  S.step=n;if(n===3)updSum();
+}
+function wNext(){
+  if(S.step===2){
+    const nm=document.getElementById('cname').value.trim();
+    const dt=document.getElementById('udate').value;
+    if(!nm){toast('Please enter a capsule name','err');return;}
+    if(!dt){toast('Please choose an unlock date','err');return;}
+    if(new Date(dt)<=new Date()){toast('Unlock date must be in the future','err');return;}
+  }
+  if(S.step<3)rStep(S.step+1);
+}
+function wPrev(){if(S.step>1)rStep(S.step-1);}
+function selV(v,el){document.querySelectorAll('.vsl').forEach(x=>x.classList.remove('sel'));el.classList.add('sel');S.vessel=v;}
+
+function handleFiles(input,type){
+  const files=Array.from(input.files);if(!files.length)return;
+  files.forEach(file=>{
+    S.media[type].push(file);
+    const idx=S.media[type].length-1;
+    const url=URL.createObjectURL(file);
+    const name=file.name.length>22?file.name.slice(0,20)+'…':file.name;
+    if(type==='photo'){
+      const pp=document.getElementById('photoPreviews');
+      const div=document.createElement('div');div.className='prev-item';
+      div.innerHTML=`<img src="${url}" alt="photo"><button class="prev-rm" onclick="removeMedia('photo',${idx},this.parentElement)">✕</button><div class="prev-lbl">${esc(name)}</div>`;
+      pp.appendChild(div);
+    } else if(type==='video'){
+      const vp=document.getElementById('videoPreviews');
+      const div=document.createElement('div');div.className='prev-item';
+      div.innerHTML=`<video src="${url}" muted playsinline preload="metadata"></video><button class="prev-rm" onclick="removeMedia('video',${idx},this.parentElement)">✕</button><div class="prev-lbl">${esc(name)}</div>`;
+      vp.appendChild(div);
+    } else {
+      const al=document.getElementById('audioList');
+      const div=document.createElement('div');div.className='mi';
+      div.innerHTML=`<div class="mi-label">🎙 ${esc(name)}</div><span class="rm" onclick="removeMedia('voice',${idx},this.parentElement)">✕</span>`;
+      al.appendChild(div);
+    }
+    toast(`${type==='photo'?'📷':type==='video'?'🎥':'🎙'} ${name} added`);
+  });
+  input.value='';
+}
+function removeMedia(type,idx,el){S.media[type][idx]=null;el.remove();}
+
+function refreshUnlocks(){
+  let changed=false;
+  const current=S.currentCapsuleId?S.capsules.find(x=>String(x.id)===String(S.currentCapsuleId)):null;
+  const currentWasLocked=current?current.locked:false;
+  S.capsules.forEach(c=>{
+    const wasLocked=c.locked;
+    const nowLocked=isLocked(c);
+    if(wasLocked!==nowLocked)changed=true;
+  });
+  if(S.screen==='d')rDash();
+  if(S.screen==='v'&&S.currentCapsuleId){
+    const c=S.capsules.find(x=>String(x.id)===String(S.currentCapsuleId));
+    if(c){
+      isLocked(c);
+      if(currentWasLocked&&!c.locked)toast('The capsule has unlocked!');
+      viewC(c.id,true);
+    }
+  } else if(changed) {
+    toast('A capsule is ready to open!');
+  }
+}
+
+const vmap={chest:'🪙 Treasure Chest',scroll:'📜 Ancient Scroll',bottle:'🍾 Message in Bottle',log:"🚢 Pirate's Logbook"};
+function updSum(){
+  const nm=document.getElementById('cname'),dt=document.getElementById('udate');
+  const set=(id,v)=>{const el=document.getElementById(id);if(el)el.textContent=v;};
+  set('sv2',vmap[S.vessel]||'Treasure Chest');
+  set('sn2',nm&&nm.value?nm.value:'—');
+  if(dt&&dt.value)set('sd2',new Date(dt.value).toLocaleDateString('en-US',{year:'numeric',month:'long',day:'numeric'}));
+  set('sc3',S.emails.length?S.emails.join(', '):'Just you');
+  const ph=S.media.photo.filter(Boolean).length,vi=S.media.video.filter(Boolean).length,vo=S.media.voice.filter(Boolean).length;
+  const hasMsg=document.getElementById('cmsg')?.value.trim();
+  const parts=[];if(hasMsg)parts.push('1 letter');if(ph)parts.push(`${ph} photo${ph>1?'s':''}`);if(vi)parts.push(`${vi} video${vi>1?'s':''}`);if(vo)parts.push(`${vo} voice note${vo>1?'s':''}`);
+  set('sm2',parts.length?parts.join(', '):'None yet');
+}
+
+function addE(){
+  const inp=document.getElementById('einp'),e=inp.value.trim().toLowerCase();
+  if(!e||!e.includes('@')||!e.includes('.')){inp.value='';toast('Enter a valid email','err');return;}
+  if(S.emails.includes(e)){inp.value='';toast('Already added','err');return;}
+  S.emails.push(e);
+  const chips=document.getElementById('echips'),chip=document.createElement('div');
+  chip.className='chip';chip.innerHTML=`${esc(e)} <span class="xbtn" onclick="rmE('${esc(e)}',this.parentElement)">×</span>`;
+  chips.appendChild(chip);inp.value='';updSum();
+}
+function rmE(e,el){S.emails=S.emails.filter(x=>x!==e);el.remove();updSum();}
+
+async function sendEmails(capsuleName,unlockDate){
+  if(!S.emails.length)return;
+  const st=document.getElementById('emailStatus');
+  const unlockStr=new Date(unlockDate).toLocaleDateString('en-US',{year:'numeric',month:'long',day:'numeric'});
+  if(!EMAIL_ENABLED){
+    if(st){st.className='email-status show sending';st.textContent='📬 Email ready — add your EmailJS keys to activate.';}
+    return;
+  }
+  if(st){st.className='email-status show sending';st.textContent='📬 Sending invitations…';}
+  let sent=0,failed=0;
+  for(const email of S.emails){
+    try{
+      await emailjs.send(EJS_SERVICE_ID,EJS_TEMPLATE_ID,{to_email:email,capsule_name:capsuleName,unlock_date:unlockStr,message:`You've been invited to "${capsuleName}". It unlocks on ${unlockStr}.`});
+      sent++;
+    }catch(err){console.error('EmailJS fail',email,err);failed++;}
+  }
+  if(st){
+    if(!failed){st.className='email-status show sent';st.textContent=`✓ ${sent} invitation${sent>1?'s':''} sent`;}
+    else{st.className='email-status show fail';st.textContent=`⚠ ${sent} sent, ${failed} failed — check EmailJS config`;}
+  }
+}
+
+async function uploadMemoryFile(file,type,capsuleId){
+  if(!SUPABASE_ENABLED)return {storage_path:null,preview:URL.createObjectURL(file)};
+  const safeName=file.name.replace(/[^a-z0-9._-]/gi,'_');
+  const path=`${S.user.id}/${capsuleId}/${type}/${Date.now()}_${safeName}`;
+  const {error}=await sb.storage.from(SUPABASE_MEDIA_BUCKET).upload(path,file,{cacheControl:'3600',upsert:false,contentType:file.type||undefined});
+  if(error)throw error;
+  return {storage_path:path,preview:null};
+}
+
+function showSealDone(c){
+  const unlockStr=new Date(c.udate).toLocaleString('en-US',{year:'numeric',month:'long',day:'numeric',hour:'numeric',minute:'2-digit'});
+  const rows=c.mems.length?c.mems.map(mem=>`<div class="stored-row"><span>${esc(mem.t)}</span><strong>${esc(mem.p)}</strong></div>`).join(''):`<div class="stored-row"><span>Memory</span><strong>Empty capsule</strong></div>`;
+  document.getElementById('vcon').innerHTML=`<div class="seal-done ain">
+    <div class="vchest op"><div class="vlid"></div><div class="vbdy"><div class="vba"></div><div class="vba"></div><div class="vlk2"></div></div><div class="vglow"></div></div>
+    <div class="done-title">Capsule Stored</div>
+    <p class="done-copy">Your memories are saved in this session and the chest has been sealed until ${unlockStr}.</p>
+    <div class="stored-panel">
+      <h3>${esc(c.name)}</h3>
+      ${rows}
+      <div class="stored-row"><span>Crew</span><strong>${c.crew.join(', ')}</strong></div>
+    </div>
+    <div class="done-actions">
+      <button class="bp" onclick="viewC('${esc(c.id)}')">View Sealed Capsule</button>
+      <button class="bs" onclick="go('d')">My Capsules</button>
+      <button class="bs" onclick="go('c')">Store Another</button>
+    </div>
+  </div>`;
+  go('v');
+}
+
+async function doSealLocalOld(){
+  const nm=(document.getElementById('cname')?.value.trim())||'My Capsule';
+  const ds=document.getElementById('udate')?.value;
+  const ud=ds?new Date(ds):new Date(Date.now()+365*24*36e5);
+  const msg=document.getElementById('cmsg')?.value.trim()||'';
+  const parts=(vmap[S.vessel]||'🪙 Treasure Chest').split(' ');
+  const em=parts[0],vn=parts.slice(1).join(' ');
+  const btn=document.getElementById('sealBtn');
+  if(btn){btn.disabled=true;btn.textContent='⏳ Sealing…';}
+  const mems=[];
+  if(msg)mems.push({t:'letter',p:msg.slice(0,140)+(msg.length>140?'…':''),by:'You',preview:null});
+  S.media.photo.filter(Boolean).forEach(f=>mems.push({t:'photo',p:f.name,by:'You',preview:URL.createObjectURL(f)}));
+  S.media.video.filter(Boolean).forEach(f=>mems.push({t:'video',p:f.name,by:'You',preview:URL.createObjectURL(f)}));
+  S.media.voice.filter(Boolean).forEach(f=>mems.push({t:'voice',p:f.name,by:'You',preview:null}));
+  const initials=S.emails.length?S.emails.map(e=>e[0].toUpperCase()):['Y'];
+  const capsule={id:Date.now(),name:nm,em,vn,udate:ud,crew:initials,locked:ud>new Date(),mems};
+  S.capsules.unshift(capsule);
+  await sendEmails(nm,ds);
+  toast('⚓ Capsule sealed and set adrift in time!');
+  if(btn){btn.disabled=false;btn.textContent='🔐 Seal the Capsule';}
+  setTimeout(()=>showSealDone(capsule),650);
+}
+
+async function doSeal(){
+  const nm=(document.getElementById('cname')?.value.trim())||'My Capsule';
+  const ds=document.getElementById('udate')?.value;
+  const ud=ds?new Date(ds):new Date(Date.now()+365*24*36e5);
+  const msg=document.getElementById('cmsg')?.value.trim()||'';
+  const parts=(vmap[S.vessel]||'Treasure Chest').split(' ');
+  const em=parts[0],vn=parts.slice(1).join(' ');
+  const btn=document.getElementById('sealBtn');
+  if(btn){btn.disabled=true;btn.textContent='Sealing...';}
+  const mems=[];
+  const capsuleId=SUPABASE_ENABLED?crypto.randomUUID():Date.now();
+  if(msg)mems.push({t:'letter',p:msg.slice(0,140)+(msg.length>140?'...':''),by:'You',preview:null});
+  try{
+    for(const f of S.media.photo.filter(Boolean)){
+      const uploaded=await uploadMemoryFile(f,'photo',capsuleId);
+      mems.push({t:'photo',p:f.name,by:'You',preview:uploaded.preview,storage_path:uploaded.storage_path});
+    }
+    for(const f of S.media.video.filter(Boolean)){
+      const uploaded=await uploadMemoryFile(f,'video',capsuleId);
+      mems.push({t:'video',p:f.name,by:'You',preview:uploaded.preview,storage_path:uploaded.storage_path});
+    }
+    for(const f of S.media.voice.filter(Boolean)){
+      const uploaded=await uploadMemoryFile(f,'voice',capsuleId);
+      mems.push({t:'voice',p:f.name,by:'You',preview:null,storage_path:uploaded.storage_path});
+    }
+  }catch(error){
+    toast(`Upload failed: ${error.message}`,'err');
+    if(btn){btn.disabled=false;btn.textContent='Seal the Capsule';}
+    return;
+  }
+  const initials=S.emails.length?S.emails.map(e=>e[0].toUpperCase()):['Y'];
+  const capsule={id:capsuleId,name:nm,em,vn,udate:ud,crew:initials,locked:ud>new Date(),mems};
+  if(SUPABASE_ENABLED){
+    const {error}=await sb.from('capsules').insert({
+      id:capsuleId,
+      owner_id:S.user.id,
+      name:nm,
+      em,
+      vn,
+      unlock_at:ud.toISOString(),
+      crew:initials,
+      mems
+    });
+    if(error){
+      toast(`Save failed: ${error.message}`,'err');
+      if(btn){btn.disabled=false;btn.textContent='Seal the Capsule';}
+      return;
+    }
+  }
+  S.capsules.unshift(capsule);
+  await sendEmails(nm,ds);
+  toast('Capsule sealed and saved!');
+  if(btn){btn.disabled=false;btn.textContent='Seal the Capsule';}
+  setTimeout(()=>showSealDone(capsule),650);
+}
+
+function toast(msg,type=''){
+  const c=document.getElementById('tctoast'),t=document.createElement('div');
+  t.className='toast'+(type?' '+type:'');t.textContent=msg;
+  c.appendChild(t);setTimeout(()=>t.remove(),3200);
+}
+function esc(s){return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');}
+
+function initP(){
+  const cv=document.getElementById('ptc');if(!cv)return;
+  const ctx=cv.getContext('2d'),p=cv.parentElement;
+  cv.width=p.offsetWidth||680;cv.height=p.offsetHeight||520;
+  const pts=Array.from({length:34},()=>({x:Math.random()*cv.width,y:Math.random()*cv.height,r:Math.random()*1.5+.3,vx:(Math.random()-.5)*.26,vy:-(Math.random()*.38+.11),op:Math.random()*.42+.16,c:Math.random()>.5?'149,112,40':'205,162,52'}));
+  let af;
+  (function draw(){
+    if(S.screen!=='l'){cancelAnimationFrame(af);return;}
+    ctx.clearRect(0,0,cv.width,cv.height);
+    pts.forEach(p=>{
+      ctx.beginPath();ctx.arc(p.x,p.y,p.r,0,6.28);ctx.fillStyle=`rgba(${p.c},${p.op})`;ctx.fill();
+      p.x+=p.vx;p.y+=p.vy;p.op-=.001;
+      if(p.y<-4||p.op<=0){p.x=Math.random()*cv.width;p.y=cv.height+6;p.op=Math.random()*.42+.16;p.vy=-(Math.random()*.38+.11);p.vx=(Math.random()-.5)*.26;}
+    });
+    af=requestAnimationFrame(draw);
+  })();
+}
+
+const di=document.getElementById('udate');
+if(di)di.value=new Date(Date.now()+365*24*36e5).toISOString().slice(0,16);
+initGoogleLogin();
+initSupabaseSession();
+setInterval(refreshUnlocks,1000);
+setTimeout(initP,100);
+</script>
+</body>
+</html>
