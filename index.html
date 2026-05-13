@@ -454,15 +454,15 @@ try { if (EMAIL_ENABLED) emailjs.init(EJS_PUBLIC_KEY); } catch(e){}
 // 2. Run the SQL from supabase_schema.sql in the SQL Editor.
 // 3. Create a Storage bucket named capsule-media.
 // 4. Replace the two strings below with your Project URL and anon/public key.
-const SUPABASE_URL = 'YOUR_SUPABASE_URL';
-const SUPABASE_ANON_KEY = 'YOUR_SUPABASE_ANON_KEY';
+const SUPABASE_URL = 'https://tmrgcapbsatvjxcvlpre.supabase.co/rest/v1/';
+const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InRtcmdjYXBic2F0dmp4Y3ZscHJlIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzg1OTY3MDksImV4cCI6MjA5NDE3MjcwOX0.D7Hu6g4DhOA4GECIw-Yyj9XZnB_s9rodh2LlEOqXmDA';
 const SUPABASE_MEDIA_BUCKET = 'capsule-media';
 const SUPABASE_ENABLED = SUPABASE_URL.startsWith('https://') && !SUPABASE_ANON_KEY.startsWith('YOUR_');
 const sb = SUPABASE_ENABLED ? supabase.createClient(SUPABASE_URL,SUPABASE_ANON_KEY) : null;
 
 // Google Sign-In Config for the old local-demo Google button.
 // For the full Supabase flow, enable Google in Supabase Auth and the app will use Supabase OAuth.
-const GOOGLE_CLIENT_ID = 'YOUR_GOOGLE_CLIENT_ID';
+const GOOGLE_CLIENT_ID = '1036894907308-mep456lcgavqr6vt886mh3cci9rvbifl.apps.googleusercontent.com';
 // ─────────────────────────────────────────────────────────────────────
 
 const S = {
