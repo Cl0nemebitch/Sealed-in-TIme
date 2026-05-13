@@ -239,6 +239,24 @@ input[type="radio"]{accent-color:var(--g);}
 .mbr{display:flex;align-items:center;gap:5px;background:rgba(0,0,0,.18);border:1px solid rgba(149,112,40,.12);border-radius:20px;padding:3px 9px 3px 3px;font-family:'IM Fell English',serif;font-size:11px;color:var(--cr);}
 .mav{width:20px;height:20px;border-radius:50%;background:var(--br);border:1.5px solid rgba(149,112,40,.38);display:flex;align-items:center;justify-content:center;font-size:8px;color:var(--gl);font-family:'Pirata One',cursive;}
 
+/* SLIDESHOW */
+.slideshow-overlay{position:fixed;inset:0;background:rgba(0,0,0,.95);display:flex;flex-direction:column;align-items:center;justify-content:center;z-index:5000;animation:fin .4s ease;}
+.slideshow-container{position:relative;width:90vw;height:80vh;max-width:900px;max-height:600px;background:rgba(16,9,4,.98);border:2px solid rgba(179,134,48,.3);border-radius:12px;overflow:hidden;display:flex;flex-direction:column;}
+.slideshow-media{flex:1;display:flex;align-items:center;justify-content:center;background:rgba(0,0,0,.3);position:relative;overflow:hidden;}
+.slideshow-img{max-width:100%;max-height:100%;object-fit:contain;}
+.slideshow-video{max-width:100%;max-height:100%;object-fit:contain;}
+.slideshow-info{padding:18px;background:rgba(40,28,13,.8);border-top:1px solid rgba(179,134,48,.2);text-align:center;}
+.slideshow-title{font-family:'Pirata One',cursive;color:var(--glp);font-size:20px;margin-bottom:6px;}
+.slideshow-meta{font-family:'IM Fell English',serif;font-style:italic;color:var(--cr);font-size:13px;opacity:.7;}
+.slideshow-controls{display:flex;align-items:center;justify-content:space-between;padding:14px 18px;background:rgba(40,28,13,.6);border-top:1px solid rgba(179,134,48,.15);}
+.slideshow-nav{display:flex;gap:8px;}
+.slideshow-nav button{background:rgba(149,112,40,.1);border:1.5px solid rgba(149,112,40,.3);color:var(--gl);border-radius:6px;padding:8px 14px;cursor:pointer;font-family:'IM Fell English',serif;font-size:12px;transition:all .2s;}
+.slideshow-nav button:hover{background:rgba(149,112,40,.2);border-color:var(--g);}
+.slideshow-counter{font-family:'Pirata One',cursive;color:var(--gl);font-size:13px;}
+.slideshow-close{background:rgba(150,70,40,.15);border:1.5px solid rgba(150,70,40,.3);color:#D086560;padding:8px 14px;border-radius:6px;cursor:pointer;font-family:'IM Fell English',serif;font-size:12px;transition:all .2s;}
+.slideshow-close:hover{background:rgba(150,70,40,.25);border-color:#D08656;}
+.slideshow-empty{color:var(--muted);font-family:'IM Fell English',serif;font-style:italic;font-size:14px;}
+
 /* TOAST */
 #tctoast{position:fixed;top:68px;left:50%;transform:translateX(-50%);z-index:9999;pointer-events:none;display:flex;flex-direction:column;align-items:center;gap:4px;}
 .toast{background:rgba(20,12,3,.97);border:1px solid rgba(149,112,40,.4);border-radius:7px;padding:8px 17px;font-family:'IM Fell English',serif;font-style:italic;font-size:12px;color:var(--gl);white-space:nowrap;animation:tin .3s ease,tout .4s ease 2.6s forwards;}
@@ -269,6 +287,7 @@ input[type="radio"]{accent-color:var(--g);}
   <button class="bg" onclick="go('d')">My Capsules <span class="ndot"></span></button>
 </nav>
 <div id="tctoast"></div>
+<div id="slideshowOverlay"></div>
 
 <!-- AUTH -->
 <div id="sa" class="sc on">
@@ -651,9 +670,9 @@ async function viewC(id,silent=false){
       else if(mem.preview&&mem.t==='video') media=`<video class="mcard-vid" src="${mem.preview}" controls muted playsinline></video>`;
       return`<div class="mcard" style="animation-delay:${i*.08}s">${media}<div class="mcard-body"><div class="mtyp">${icons[mem.t]||'✦'} ${mem.t}</div><div class="mpre">${esc(mem.p)}</div><div class="maut">— ${esc(mem.by)}</div></div></div>`;
     }).join('');
-    body=`<div class="vchest op"><div class="vlid"></div><div class="vbdy"><div class="vba"></div><div class="vba"></div></div><div class="vglow" style="background:radial-gradient(ellipse,rgba(50,140,50,.2) 0%,transparent 70%);"></div></div>
+    body=`<div class="vchest op" onclick="showSlideshow('${esc(c.id)}');return false;"><div class="vlid"></div><div class="vbdy"><div class="vba"></div><div class="vba"></div></div><div class="vglow" style="background:radial-gradient(ellipse,rgba(50,140,50,.2) 0%,transparent 70%);"></div></div>
       <div style="font-family:'Pirata One',cursive;font-size:17px;color:#70B870;margin-bottom:4px;">✦ Treasures Revealed ✦</div>
-      <div style="font-family:'IM Fell English',serif;font-style:italic;font-size:11px;color:rgba(190,176,144,.4);margin-bottom:20px;">${c.mems.length} memories await you</div>
+      <div style="font-family:'IM Fell English',serif;font-style:italic;font-size:11px;color:rgba(190,176,144,.4);margin-bottom:20px;cursor:pointer;color:#70B870;" onclick="showSlideshow('${esc(c.id)}')">Click the chest to view your memories as a slideshow</div>
       <div class="mems">${mc}</div><div class="mbrs" style="margin-top:14px;">${mbrs}</div>`;
   }
   document.getElementById('vcon').innerHTML=`<button class="bk" onclick="go('d')">← Back to Hold</button>
@@ -910,7 +929,78 @@ function toast(msg,type=''){
 }
 function esc(s){return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');}
 
-function initP(){
+// Slideshow
+let currentSlideshowCapsuleId=null;
+let currentSlideIndex=0;
+
+function showSlideshow(capsuleId){
+  const c=S.capsules.find(x=>String(x.id)===String(capsuleId));
+  if(!c||c.locked||!c.mems.length){toast('No unlocked memories to show','err');return;}
+  currentSlideshowCapsuleId=capsuleId;
+  currentSlideIndex=0;
+  renderSlideshow();
+}
+
+function closeSlideshow(){
+  const overlay=document.getElementById('slideshowOverlay');
+  if(overlay)overlay.innerHTML='';
+  currentSlideshowCapsuleId=null;
+  currentSlideIndex=0;
+}
+
+function nextSlide(){
+  const c=S.capsules.find(x=>String(x.id)===String(currentSlideshowCapsuleId));
+  if(!c)return;
+  currentSlideIndex=(currentSlideIndex+1)%c.mems.length;
+  renderSlideshow();
+}
+
+function prevSlide(){
+  const c=S.capsules.find(x=>String(x.id)===String(currentSlideshowCapsuleId));
+  if(!c)return;
+  currentSlideIndex=(currentSlideIndex-1+c.mems.length)%c.mems.length;
+  renderSlideshow();
+}
+
+function renderSlideshow(){
+  const c=S.capsules.find(x=>String(x.id)===String(currentSlideshowCapsuleId));
+  if(!c||!c.mems.length){closeSlideshow();return;}
+  
+  const mem=c.mems[currentSlideIndex];
+  let mediaHtml='';
+  
+  if(mem.t==='photo'&&mem.preview){
+    mediaHtml=`<img class="slideshow-img" src="${mem.preview}" alt="photo">`;
+  } else if(mem.t==='video'&&mem.preview){
+    mediaHtml=`<video class="slideshow-video" src="${mem.preview}" controls playsinline></video>`;
+  } else if(mem.t==='letter'){
+    mediaHtml=`<div style="padding:30px;display:flex;align-items:center;justify-content:center;height:100%;"><div style="text-align:center;max-width:500px;"><div style="font-family:'IM Fell English',serif;font-style:italic;font-size:13px;color:rgba(206,192,160,.6);margin-bottom:14px;">Letter from ${esc(mem.by)}</div><div style="font-family:'Lora',serif;font-size:15px;color:var(--p);line-height:1.6;">"${esc(mem.p)}"</div></div></div>`;
+  } else if(mem.t==='voice'){
+    mediaHtml=`<div style="padding:30px;display:flex;align-items:center;justify-content:center;height:100%;flex-direction:column;gap:16px;"><div style="font-size:36px;">🎙</div><div style="font-family:'IM Fell English',serif;font-style:italic;font-size:13px;color:rgba(206,192,160,.6);">Voice note from ${esc(mem.by)}</div><div style="font-family:'IM Fell English',serif;font-size:12px;color:var(--gl);">${esc(mem.p)}</div><audio style="margin-top:12px;" controls playsinline><source src="${mem.preview||''}" type="audio/mpeg"></audio></div>`;
+  } else {
+    mediaHtml=`<div class="slideshow-empty">Memory unavailable</div>`;
+  }
+  
+  const overlay=document.getElementById('slideshowOverlay');
+  overlay.innerHTML=`<div class="slideshow-overlay" onclick="event.target===this&&closeSlideshow()">
+    <div class="slideshow-container">
+      <div class="slideshow-media">${mediaHtml}</div>
+      <div class="slideshow-info">
+        <div class="slideshow-title">${esc(mem.p.slice(0,50))}</div>
+        <div class="slideshow-meta">by ${esc(mem.by)} · ${mem.t}</div>
+      </div>
+      <div class="slideshow-controls">
+        <div class="slideshow-nav">
+          <button onclick="prevSlide()">← Previous</button>
+          <button onclick="nextSlide()">Next →</button>
+        </div>
+        <div class="slideshow-counter">${currentSlideIndex+1} / ${c.mems.length}</div>
+        <button class="slideshow-close" onclick="closeSlideshow()">✕ Close</button>
+      </div>
+    </div>
+  </div>`;
+}
+
   const cv=document.getElementById('ptc');if(!cv)return;
   const ctx=cv.getContext('2d'),p=cv.parentElement;
   cv.width=p.offsetWidth||680;cv.height=p.offsetHeight||520;
